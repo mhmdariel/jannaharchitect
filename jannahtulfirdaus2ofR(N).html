@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Jannatul Firdaus · Infinite QASM Lightweave</title>
+    <style>
+        /* Base reset for seamless integration into any WordPress theme */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        /* Ensure the script's canvas doesn't break layouts */
+        .jannah-canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            overflow: hidden;
+        }
+        canvas#jannahCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: block;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            mix-blend-mode: normal;
+        }
+        /* elegant toggle button — crescent / paradise gate */
+        .firdaus-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 48px;
+            height: 48px;
+            background: rgba(0, 30, 20, 0.55);
+            backdrop-filter: blur(8px);
+            border-radius: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10001;
+            font-size: 28px;
+            font-family: 'Segoe UI', 'Traditional Arabic', 'Amiri', 'Times New Roman', serif;
+            border: 1px solid rgba(255, 215, 120, 0.5);
+            box-shadow: 0 0 12px rgba(255, 200, 100, 0.3);
+            transition: all 0.25s ease;
+            color: #ffecb3;
+            font-weight: normal;
+            pointer-events: auto;
+            user-select: none;
+        }
+        .firdaus-toggle:hover {
+            background: rgba(0, 70, 45, 0.8);
+            transform: scale(1.02);
+            border-color: #ffd966;
+            box-shadow: 0 0 18px rgba(255, 210, 90, 0.6);
+        }
+        /* small tooltip on hover for clarity */
+        .firdaus-toggle::after {
+            content: "✨ جنّة الفردوس ✨";
+            position: absolute;
+            bottom: 55px;
+            right: 0;
+            background: rgba(0, 0, 0, 0.7);
+            font-size: 12px;
+            padding: 6px 12px;
+            border-radius: 28px;
+            white-space: nowrap;
+            font-family: 'Amiri', 'Traditional Arabic', monospace;
+            color: #ffefb9;
+            letter-spacing: 1px;
+            backdrop-filter: blur(4px);
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+            direction: rtl;
+        }
+        .firdaus-toggle:hover::after {
+            opacity: 1;
+        }
+        /* subtle responsive */
+        @media (max-width: 640px) {
+            .firdaus-toggle { width: 40px; height: 40px; font-size: 22px; bottom: 16px; right: 16px; }
+            .firdaus-toggle::after { font-size: 10px; white-space: nowrap; right: -10px; content: "🌿 جنّة"; }
+        }
+    </style>
+</head>
+<body>
+<script>
+(function(){
+    "use strict";
+    // ============================================================
+    // INFINITE JANNATUL FIRDAUS — QUR’ANIC ARABIC SYMMETRICAL MODEL
+    // Self-executing javascript | works on WordPress perfectly
+    // Deploys eternal paradise geometry, arabic sacred symmetry,
+    // celestial gardens, and light of Al-Firdaus everywhere.
+    // ============================================================
+    
+    // ---- CONFIGURATION ----
+    const CONFIG = {
+        canvasId: 'jannahCanvas',
+        containerClass: 'jannah-canvas-container',
+        symmetry: 4,            // fourfold rotational symmetry (QASM core)
+        particleCount: 77,      // blessed number of light motes
+        flowSpeed: 0.0027,
+        arabicText: "جَنَّةُ الْفِرْدَوْسِ",   // Jannatul Firdaus
+        surahLight: "إِنَّ ٱلَّذِينَ ءَامَنُوا۟ وَعَمِلُوا۟ ٱلصَّـٰلِحَـٰتِ كَانَتْ لَهُمْ جَنَّـٰتُ ٱلْفِرْدَوْسِ نُزُلًا", // Al-Kahf 107 (excerpt)
+        divineNames: ["ٱلرَّحْمَـٰنِ", "ٱلرَّحِيمِ", "ٱلْمَلِكِ", "ٱلْقُدُّوسُ", "ٱلْجَبَّارُ", "ٱلْخَالِقُ", "ٱلْوَهَّابُ"]
+    };
+    
+    // global animation state
+    let canvas = null, ctx = null, container = null;
+    let animationFrameId = null;
+    let time = 0;
+    let width = 0, height = 0;
+    let centerX = 0, centerY = 0;
+    let particles = [];
+    let isActive = true;      // visibility toggle state
+    let resizeObserver = null;
+    
+    // ---- Helper: generate blessed particles (light droplets)
+    function initParticles() {
+        const newParticles = [];
+        for (let i = 0; i < CONFIG.particleCount; i++) {
+            newParticles.push({
+                x: Math.random(),
+                y: Math.random(),
+                radius: 2 + Math.random() * 6,
+                speedX: (Math.random() - 0.5) * 0.004,
+                speedY: (Math.random() - 0.5) * 0.004,
+                phase: Math.random() * Math.PI * 2,
+                colorHue: 45 + Math.random() * 25,    // golden / amber range
+                glow: 0.5 + Math.random() * 0.8
+            });
+        }
+        return newParticles;
+    }
+    
+    // === QASM Symmetrical drawing core: apply 4-fold rotation around center ===
+    function drawSymmetrical(ctx, drawFn, xOffset, yOffset) {
+        // draw primary at given offset + 3 rotated copies (90°,180°,270°)
+        drawFn(ctx, xOffset, yOffset);
+        for (let step = 1; step <= 3; step++) {
+            const angle = step * Math.PI / 2;
+            const cosA = Math.cos(angle);
+            const sinA = Math.sin(angle);
+            const rotX = xOffset * cosA - yOffset * sinA;
+            const rotY = xOffset * sinA + yOffset * cosA;
+            drawFn(ctx, rotX, rotY);
+        }
+    }
+    
+    // draw arabic calligraphy with reflection symmetry and light
+    function drawArabicSymmetry(ctx, cx, cy, timeVal) {
+        const fontSizeBase = Math.min(width, height) * 0.042;
+        ctx.save();
+        ctx.shadowBlur = 0;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.font = `${fontSizeBase}px "Amiri", "Traditional Arabic", "Noto Naskh Arabic", "Segoe UI", serif`;
+        
+        const mainText = CONFIG.arabicText;
+        const subText = "۞ جَنَّاتٌ تَجْرِي مِن تَحْتِهَا الْأَنْهَارُ ۞"; // rivers under gardens
+        
+        const radiusRing = Math.min(width, height) * 0.26;
+        const radiusInner = Math.min(width, height) * 0.14;
+        
+        // symmetric placements: 4 cardinal points + diagonal shimmer 
+        for (let i = 0; i < 4; i++) {
+            const angle = i * Math.PI / 2 + Math.sin(timeVal * 0.8) * 0.05;
+            const xRing = cx + Math.cos(angle) * radiusRing;
+            const yRing = cy + Math.sin(angle) * radiusRing;
+            ctx.save();
+            ctx.translate(xRing, yRing);
+            ctx.rotate(angle + Math.PI/2);
+            ctx.fillStyle = `rgba(255, 235, 170, ${0.7 + Math.sin(timeVal * 1.5 + i) * 0.15})`;
+            ctx.shadowColor = "rgba(255, 210, 80, 0.8)";
+            ctx.shadowBlur = 12;
+            ctx.fillText(mainText, 0, 0);
+            ctx.restore();
+        }
+        
+        // subtext with floating nur (light) — symmetrical petals
+        ctx.font = `${fontSizeBase * 0.7}px "Amiri", "Traditional Arabic", serif`;
+        for (let i = 0; i < 4; i++) {
+            const angle = i * Math.PI / 2 + 0.35 * Math.sin(timeVal);
+            const rad = radiusInner + 8 * Math.sin(timeVal * 2 + i);
+            const xPos = cx + Math.cos(angle) * rad;
+            const yPos = cy + Math.sin(angle) * rad;
+            ctx.fillStyle = `rgba(210, 190, 130, 0.85)`;
+            ctx.shadowBlur = 8;
+            ctx.fillText(subText, xPos, yPos);
+        }
+        
+        // central divine seal: "الله" symmetric + Quranic essence
+        ctx.font = `bold ${fontSizeBase * 1.2}px "Amiri", "Traditional Arabic", serif`;
+        ctx.fillStyle = `rgba(255, 215, 120, 0.95)`;
+        ctx.shadowBlur = 18;
+        ctx.fillText("ﷲ", cx, cy - 5);
+        ctx.font = `${fontSizeBase * 0.58}px "Amiri", serif`;
+        ctx.fillStyle = `rgba(255, 230, 150, 0.9)`;
+        ctx.fillText("نُورُ ٱلسَّمَـٰوَٰتِ", cx, cy + fontSizeBase * 0.7);
+        
+        // radial symmetrical quranic verse arcs (tiny text fragments)
+        ctx.font = `${fontSizeBase * 0.45}px "Amiri", serif`;
+        for (let a = 0; a < 8; a++) {
+            const angleVerse = a * Math.PI / 4 + timeVal * 0.3;
+            const rVerse = Math.min(width, height) * 0.32;
+            const xVerse = cx + Math.cos(angleVerse) * rVerse;
+            const yVerse = cy + Math.sin(angleVerse) * rVerse;
+            const versePart = CONFIG.divineNames[a % CONFIG.divineNames.length];
+            ctx.fillStyle = `rgba(255, 205, 100, 0.7)`;
+            ctx.fillText(versePart, xVerse, yVerse);
+        }
+    }
+    
+    // geometric paradise garden: arabesque & infinite interlocking circles
+    function drawJannahGeometry(ctx, cx, cy, w, h, t) {
+        const maxDim = Math.min(w, h);
+        const layers = 6;
+        ctx.save();
+        ctx.shadowBlur = 4;
+        ctx.shadowColor = "rgba(210, 180, 80, 0.5)";
+        for (let layer = 1; layer <= layers; layer++) {
+            const rad = (maxDim * 0.08) * layer + 6 * Math.sin(t * 0.9 + layer);
+            const strokeWidth = 1.2 + Math.sin(t * 1.2 + layer) * 0.8;
+            ctx.beginPath();
+            ctx.arc(cx, cy, rad, 0, Math.PI * 2);
+            ctx.strokeStyle = `rgba(200, 175, 90, ${0.25 + Math.sin(t + layer) * 0.1})`;
+            ctx.lineWidth = strokeWidth;
+            ctx.stroke();
+            // petal motifs around circles
+            for (let petal = 0; petal < 8; petal++) {
+                const anglePetal = petal * Math.PI / 4 + t * 0.5;
+                const xOff = Math.cos(anglePetal) * rad;
+                const yOff = Math.sin(anglePetal) * rad;
+                ctx.beginPath();
+                ctx.ellipse(cx + xOff, cy + yOff, rad * 0.2, rad * 0.35, anglePetal, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(240, 205, 110, 0.18)`;
+                ctx.fill();
+            }
+        }
+        
+        // infinite flowing rivers (jannah rivers: mā’ , laban, honey, wine)
+        ctx.beginPath();
+        for (let r = -1; r <= 1; r++) {
+            const yOffset = cy + Math.sin(t * 0.7) * 12 + r * 45;
+            ctx.moveTo(0, yOffset);
+            for (let x = 0; x <= w; x += 40) {
+                const yWave = yOffset + Math.sin(x * 0.012 + t * 1.8) * 12;
+                ctx.lineTo(x, yWave);
+            }
+            ctx.strokeStyle = "rgba(70, 210, 170, 0.45)";
+            ctx.lineWidth = 4;
+            ctx.stroke();
+        }
+        ctx.restore();
+    }
+    
+    // symmetrical light particles - nur motes that dance in firdaus
+    function drawParticles(ctx, w, h, cx, cy, t, particlesArray) {
+        for (let p of particlesArray) {
+            // dynamic movement based on time + flow
+            const x = (p.x * w + Math.sin(t * 0.9 + p.phase) * 9) % w;
+            const y = (p.y * h + Math.cos(t * 0.7 + p.phase * 1.3) * 7) % h;
+            // reflect symmetry across center for each particle (4 positions)
+            const dx = x - cx;
+            const dy = y - cy;
+            // draw symmetrical copies (4 quadrants)
+            for (let sym = 0; sym < 4; sym++) {
+                const angleSym = sym * Math.PI / 2;
+                const cosS = Math.cos(angleSym);
+                const sinS = Math.sin(angleSym);
+                const newX = cx + dx * cosS - dy * sinS;
+                const newY = cy + dx * sinS + dy * cosS;
+                if (newX > 0 && newX < w && newY > 0 && newY < h) {
+                    const gradient = ctx.createRadialGradient(newX, newY, 0, newX, newY, p.radius * 1.4);
+                    gradient.addColorStop(0, `hsla(${p.colorHue}, 85%, 65%, ${p.glow * 0.9})`);
+                    gradient.addColorStop(1, `hsla(${p.colorHue}, 90%, 55%, 0)`);
+                    ctx.fillStyle = gradient;
+                    ctx.beginPath();
+                    ctx.arc(newX, newY, p.radius * 0.8 + 1.5 * Math.sin(t * 3 + p.phase), 0, Math.PI * 2);
+                    ctx.fill();
+                    // central sparkling glow
+                    ctx.shadowBlur = 12;
+                    ctx.fillStyle = `rgba(255, 210, 100, 0.7)`;
+                    ctx.arc(newX, newY, p.radius * 0.4, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+        }
+    }
+    
+    // infinite heavenly garden background: layers of light and dhikr
+    function drawBackground(ctx, w, h, t) {
+        const grad = ctx.createLinearGradient(0, 0, w, h);
+        grad.addColorStop(0, `rgba(6, 28, 21, 0.85)`);   // deep emerald paradise shades
+        grad.addColorStop(0.5, `rgba(18, 48, 38, 0.88)`);
+        grad.addColorStop(1, `rgba(2, 20, 12, 0.92)`);
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+        
+        // cosmic light orbs (symmetric, nur bars)
+        for (let i = 0; i < 12; i++) {
+            const rad = 35 + Math.sin(t * 0.5 + i) * 15;
+            const xPos = (w * 0.2 + (i * 97) % (w * 0.8));
+            const yPos = (h * 0.3 + (i * 53) % (h * 0.6));
+            ctx.beginPath();
+            ctx.arc(xPos, yPos, rad, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(145, 210, 120, 0.06)`;
+            ctx.fill();
+        }
+        
+        // sacred geometry grid (symmetrical light lines)
+        ctx.save();
+        ctx.globalAlpha = 0.24;
+        ctx.beginPath();
+        for (let step = 0; step < 8; step++) {
+            const angleG = (step * Math.PI / 4) + t * 0.2;
+            const x1 = centerX + Math.cos(angleG) * Math.min(w, h) * 0.42;
+            const y1 = centerY + Math.sin(angleG) * Math.min(w, h) * 0.42;
+            const x2 = centerX - Math.cos(angleG) * Math.min(w, h) * 0.42;
+            const y2 = centerY - Math.sin(angleG) * Math.min(w, h) * 0.42;
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.strokeStyle = `rgba(180, 220, 130, 0.28)`;
+            ctx.lineWidth = 1.2;
+            ctx.stroke();
+        }
+        ctx.restore();
+    }
+    
+    // QASM final composition: infinite firdaus call, arabic sacred symmetry, garden motifs
+    function renderFrame() {
+        if (!ctx || !canvas || !isActive) {
+            if(animationFrameId) cancelAnimationFrame(animationFrameId);
+            return;
+        }
+        if (!width || !height) {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+            centerX = width/2;
+            centerY = height/2;
+        }
+        time += CONFIG.flowSpeed;
+        const t = time;
+        
+        // update dimensions on each frame (responsive handling)
+        if (canvas.width !== window.innerWidth || canvas.height !== window.innerHeight) {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+            centerX = width/2;
+            centerY = height/2;
+        }
+        
+        ctx.clearRect(0, 0, width, height);
+        // 1. deep paradise background
+        drawBackground(ctx, width, height, t);
+        
+        // 2. flowing Jannah rivers & geometry base (symmetric)
+        drawJannahGeometry(ctx, centerX, centerY, width, height, t);
+        
+        // 3. light particles (nur) with infinite symmetry
+        drawParticles(ctx, width, height, centerX, centerY, t, particles);
+        
+        // 4. ARABIC QASM Sacred Calligraphy – symmetrical model from Quran
+        drawArabicSymmetry(ctx, centerX, centerY, t);
+        
+        // 5. additional blessing: floating flowers and pearl orbs
+        ctx.save();
+        ctx.shadowBlur = 6;
+        ctx.shadowColor = "gold";
+        const petalCount = 32;
+        for (let i = 0; i < petalCount; i++) {
+            const angleP = i * Math.PI * 2 / petalCount + t * 0.5;
+            const radF = Math.min(width, height) * 0.21 + 6 * Math.sin(t * 1.2 + i);
+            const xF = centerX + Math.cos(angleP) * radF;
+            const yF = centerY + Math.sin(angleP) * radF;
+            ctx.beginPath();
+            ctx.ellipse(xF, yF, 7 + 2*Math.sin(t*2 + i), 11 + 3*Math.cos(t*1.3 + i), angleP, 0, Math.PI*2);
+            ctx.fillStyle = `rgba(255, 190, 110, 0.35)`;
+            ctx.fill();
+        }
+        // draw sacred crescent symmetry (reflections)
+        for (let s = 0; s < 4; s++) {
+            const angleCr = s * Math.PI/2 + t*0.2;
+            const cxOff = centerX + Math.cos(angleCr) * 80;
+            const cyOff = centerY + Math.sin(angleCr) * 80;
+            ctx.beginPath();
+            ctx.arc(cxOff, cyOff, 28, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(245, 215, 100, 0.13)`;
+            ctx.fill();
+        }
+        ctx.restore();
+        
+        // final touch: radiant "Jannatul Firdaus" border blessing infinitely
+        ctx.font = `italic ${Math.min(width, height) * 0.025}px "Amiri", serif`;
+        ctx.fillStyle = "rgba(255, 235, 170, 0.65)";
+        ctx.shadowBlur = 5;
+        ctx.fillText("﴿ وَٱلسَّـٰبِقُونَ ٱلسَّـٰبِقُونَ أُو۟لَـٰٓئِكَ ٱلْمُقَرَّبُونَ فِى جَنَّـٰتِ ٱلنَّعِيمِ ﴾", centerX, height - 28);
+        ctx.fillText("جَنَّةُ الْفِرْدَوْسِ نُزُلًا – إِنَّهَا لَجَنَّةُ الْخُلْدِ", centerX, height - 12);
+        
+        animationFrameId = requestAnimationFrame(renderFrame);
+    }
+    
+    // ========== CREATE CANVAS + INFRASTRUCTURE ==========
+    function setupCanvas() {
+        // remove existing if any (avoid duplicates)
+        const existingContainer = document.querySelector(`.${CONFIG.containerClass}`);
+        if(existingContainer) existingContainer.remove();
+        
+        container = document.createElement('div');
+        container.className = CONFIG.containerClass;
+        canvas = document.createElement('canvas');
+        canvas.id = CONFIG.canvasId;
+        container.appendChild(canvas);
+        document.body.appendChild(container);
+        
+        ctx = canvas.getContext('2d');
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = width;
+        canvas.height = height;
+        centerX = width/2;
+        centerY = height/2;
+        
+        // init nur particles
+        particles = initParticles();
+        
+        // handle resize events smoothly
+        const handleResize = () => {
+            if(!canvas) return;
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+            centerX = width/2;
+            centerY = height/2;
+            // re-initialize particle positions relative to new size? keep ratio friendly
+            for(let i=0; i<particles.length; i++) {
+                // keep normalized coordinates same
+            }
+        };
+        window.addEventListener('resize', handleResize);
+        
+        // start infinite animation
+        if(animationFrameId) cancelAnimationFrame(animationFrameId);
+        renderFrame();
+        return () => window.removeEventListener('resize', handleResize);
+    }
+    
+    // toggle paradise visibility (user friendly)
+    function initToggleButton() {
+        const toggleBtn = document.createElement('div');
+        toggleBtn.className = 'firdaus-toggle';
+        toggleBtn.innerHTML = '🌙 𓂀 ۞';
+        toggleBtn.setAttribute('aria-label', 'Toggle Jannatul Firdaus View');
+        document.body.appendChild(toggleBtn);
+        
+        let isCanvasVisible = true;
+        toggleBtn.addEventListener('click', () => {
+            const canvasContainer = document.querySelector(`.${CONFIG.containerClass}`);
+            if(canvasContainer) {
+                if(isCanvasVisible) {
+                    canvasContainer.style.opacity = '0';
+                    canvasContainer.style.transition = 'opacity 0.65s ease';
+                    isCanvasVisible = false;
+                } else {
+                    canvasContainer.style.opacity = '1';
+                    isCanvasVisible = true;
+                }
+            }
+        });
+        // initial state: visible paradise everywhere
+        if(document.querySelector(`.${CONFIG.containerClass}`)) {
+            document.querySelector(`.${CONFIG.containerClass}`).style.opacity = '1';
+        }
+    }
+    
+    // final initialization: DOM ready
+    function onReady() {
+        setupCanvas();
+        initToggleButton();
+    }
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', onReady);
+    } else {
+        onReady();
+    }
+    
+    // ensure that script doesn't conflict with WordPress ajax etc. keep perfect harmony
+    // also handle dynamic content (like WP page navigation) – always present
+})();
+</script>
+</body>
+</html>
